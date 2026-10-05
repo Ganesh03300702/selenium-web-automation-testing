@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>QA Demo Store</title>
+<style>
+body{font-family:Arial,sans-serif;max-width:900px;margin:40px auto;padding:0 20px}
+nav{display:flex;gap:15px;margin-bottom:25px} section{display:none;border:1px solid #ddd;padding:20px;border-radius:8px}
+section.active{display:block} input,button,select{padding:9px;margin:5px 0} .product{border:1px solid #ddd;padding:12px;margin:8px 0}
+.error{color:#b00020}.success{color:#087f23}
+</style></head>
+<body>
+<h1>QA Demo Store</h1>
+<nav>
+<button id="nav-login">Login</button><button id="nav-products">Products</button>
+<button id="nav-cart">Cart</button><button id="nav-orders">Orders</button>
+</nav>
+
+<section id="login-section" class="active">
+<h2>Login</h2>
+<label>Username <input id="username" data-testid="username"></label><br>
+<label>Password <input id="password" type="password" data-testid="password"></label><br>
+<button id="login-btn">Login</button><p id="login-message"></p>
+</section>
+
+<section id="products-section">
+<h2>Products</h2>
+<input id="search" placeholder="Search products">
+<div id="product-list"></div>
+</section>
+
+<section id="cart-section">
+<h2>Cart</h2><div id="cart-list"></div><p id="cart-total"></p>
+<button id="checkout-btn">Checkout</button><p id="checkout-message"></p>
+</section>
+
+<section id="orders-section"><h2>Orders</h2><div id="orders-list"></div></section>
+
+<script>
+const products=[
+{id:1,name:"Laptop",price:65000},{id:2,name:"Keyboard",price:2500},{id:3,name:"Mouse",price:1200}
+];
+let cart=[],orders=[],loggedIn=false;
+const $=id=>document.getElementById(id);
+function show(id){document.querySelectorAll("section").forEach(x=>x.classList.remove("active"));$(id).classList.add("active")}
+function renderProducts(filter=""){
+ $("product-list").innerHTML=products.filter(p=>p.name.toLowerCase().includes(filter.toLowerCase()))
+ .map(p=>`<div class="product" data-testid="product-${p.id}"><b>${p.name}</b> ₹${p.price}
+ <button class="add-btn" data-id="${p.id}">Add to cart</button></div>`).join("");
+ document.querySelectorAll(".add-btn").forEach(b=>b.onclick=()=>{cart.push(products.find(p=>p.id==b.dataset.id));renderCart()});
+}
+function renderCart(){
+ $("cart-list").innerHTML=cart.length?cart.map((p,i)=>`<div>${p.name} ₹${p.price} <button class="remove-btn" data-i="${i}">Remove</button></div>`).join(""):"Cart is empty";
+ $("cart-total").textContent="Total: ₹"+cart.reduce((s,p)=>s+p.price,0);
+ document.querySelectorAll(".remove-btn").forEach(b=>b.onclick=()=>{cart.splice(+b.dataset.i,1);renderCart()});
+}
+$("nav-login").onclick=()=>show("login-section");
+$("nav-products").onclick=()=>show("products-section");
+$("nav-cart").onclick=()=>show("cart-section");
+$("nav-orders").onclick=()=>show("orders-section");
+$("login-btn").onclick=()=>{
+ if($("username").value==="testuser" && $("password").value==="Password123"){
+  loggedIn=true;$("login-message").textContent="Login successful";$("login-message").className="success";show("products-section");
+ } else {$("login-message").textContent="Invalid username or password";$("login-message").className="error";}
+};
+$("search").oninput=e=>renderProducts(e.target.value);
+$("checkout-btn").onclick=()=>{
+ if(!loggedIn){$("checkout-message").textContent="Please login first";return}
+ if(!cart.length){$("checkout-message").textContent="Cart is empty";return}
+ orders.push({items:[...cart],total:cart.reduce((s,p)=>s+p.price,0)});
+ cart=[];renderCart();$("orders-list").innerHTML=orders.map((o,i)=>`<div data-testid="order-${i}">Order ${i+1} - ₹${o.total}</div>`).join("");
+ $("checkout-message").textContent="Order placed successfully";
+};
+renderProducts();renderCart();
+</script></body></html>

@@ -1,0 +1,18 @@
+{
+  "name": "webapp-selenium-automation-js",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "test": "mocha tests --timeout 30000",
+    "test:headed": "cross-env HEADLESS=false mocha tests --timeout 30000"
+  },
+  "dependencies": {
+    "selenium-webdriver": "^4.25.0",
+    "mocha": "^11.0.1",
+    "chai": "^5.1.1",
+    "chromedriver": "^129.0.0"
+  },
+  "devDependencies": {
+    "cross-env": "^7.0.3"
+  }
+}
